@@ -1,0 +1,41 @@
+
+
+.info {
+  max-height: 100vh; /* keep it within the viewport */
+  overflow-y: auto;  /* enable scrolling only here */
+  overflow-x: hidden; /* no sideways scroll */
+}
+
+.impact-button {
+  background-color: rgba(67, 116, 207, 0.404);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* src/index.css or a new CSS file */
+.top-right-buttons {
+  margin-top: 1rem;
+  margin-right: 1rem;
+  position: fixed; /* fixed relative to viewport */
+  top: 8px;       /* distance from top edge */
+  right: 8px;     /* distance from right edge */
+  display: flex;
+  gap: 8px;       /* spacing between buttons */
+  z-index: 1000;  /* make sure it’s above everything else */
+}
+.top-right-buttons button {
+  background-color: rgba(67, 116, 207, 0.404);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+.top-right-buttons button:hover {
+  background-color: rgba(1, 37, 61, 0.85);
+}

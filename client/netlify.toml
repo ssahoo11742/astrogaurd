@@ -1,0 +1,5 @@
+[[redirects]]
+  from = "/api/*"
+  to = "https://ssd-api.jpl.nasa.gov/cad.api/*"
+  status = 200
+  headers = { "Access-Control-Allow-Origin" = "*" }

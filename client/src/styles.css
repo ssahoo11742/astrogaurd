@@ -1,0 +1,39 @@
+/* Existing styles */
+input {
+  color: rgb(238, 236, 236) !important;
+  opacity: 1;
+}
+select {
+  color: white !important;       /* Text color when selected */
+}
+
+select option {
+  color: white !important;       /* Text color inside the dropdown */
+
+}
+/* Add these to enable scrolling */
+html, body, #root {
+  height: auto !important;
+  min-height: 100vh;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+}
+
+/* Ensure Leaflet container doesn't block scroll */
+.leaflet-container {
+  z-index: 1;
+}
+
+/* Make sure the main app container can scroll */
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.live{
+  margin-top: 25%;
+}
+
+.top-strip{
+  height: 50rem;
+}

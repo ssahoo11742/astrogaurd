@@ -1,0 +1,73 @@
+/* Track with pointy ends */
+body {
+  overflow: hidden; /* Prevents overflow of child elements */
+}
+
+#speed-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Chromium, Edge, Safari */
+#speed-slider::-webkit-slider-runnable-track {
+  background: radial-gradient(circle, rgba(2,0,36,1) 0%, rgba(255,0,228,1) 100%);
+  height: 0.5rem;
+  clip-path: polygon(0% 50%, 10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%);
+}
+
+/* Firefox */
+#speed-slider::-moz-range-track {
+  background:radial-gradient(circle, rgba(2,0,36,1) 0%, rgba(255,0,228,1) 100%);
+  height: 0.5rem;
+  clip-path: polygon(0% 50%, 10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%);
+}
+
+
+/* Custom thumb */
+/* Chromium, Safari, Edge */
+#speed-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 20px; /* Make the thumb slightly bigger than the bar */
+  width: 20px;
+  background: white; /* White color */
+  cursor: pointer;
+  margin-top: -8px; /* Adjust to align with the track */
+}
+
+/* Firefox */
+#speed-slider::-moz-slider-thumb {
+  height: 20px; /* Make the thumb slightly bigger than the bar */
+  width: 20px;
+  background: white; /* White color */
+  cursor: pointer;
+  margin-top: -8px; /* Adjust to align with the track */
+}
+
+
+/* on-off button */
+#pause {
+  background-color: rgba(255,0,228,1);
+  padding: 1rem;
+  border-radius: 50%;
+  background-image: url("../../../../public/pause.png");
+  background-size: 80%; 
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+#pause:active{
+  background-color: rgb(105, 17, 83);
+}
+
+/* Live button */
+#live {
+  background:rgba(255,0,228,1);
+  padding: 0.05rem 0.3rem 0.05rem 0.3rem ;
+  border-radius: 20%;
+}
+
+#live:active{
+  background-color: rgb(105, 17, 83);
+}
