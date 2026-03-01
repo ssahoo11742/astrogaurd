@@ -22,71 +22,63 @@ const findRaw = (item) => {
   return null;
 };
 
-// enforce non-null > null
 const getVal = (obj, key) => {
   const v = obj?.[key];
   return v !== undefined && v !== null ? Number(v) : null;
 };
 
-
-
 export const Search = ({ setLabeledBodies }) => {
   const [searchInput, setSearchInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [sortOption, setSortOption] = useState("size");
-  const [sortOrder, setSortOrder] = useState("desc"); // NEW: asc/desc toggle
+  const [sortOrder, setSortOrder] = useState("desc");
   const [filteredItems, setFilteredItems] = useState([]);
   const [analysisTarget, setAnalysisTarget] = useState(null);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-const q = searchInput.trim().toLowerCase();
-let results = q
-  ? items.filter((it) => it.name.toLowerCase().includes(q))
-  : items.slice();
+    const q = searchInput.trim().toLowerCase();
+    let results = q
+      ? items.filter((it) => it.name.toLowerCase().includes(q))
+      : items.slice();
 
-results.sort((aItem, bItem) => {
-  const ra = findRaw(aItem) || {};
-  const rb = findRaw(bItem) || {};
-  let valA, valB;
+    results.sort((aItem, bItem) => {
+      const ra = findRaw(aItem) || {};
+      const rb = findRaw(bItem) || {};
+      let valA, valB;
 
-  switch (sortOption) {
-    case "size":
-      valA = getVal(ra, "diameter");
-      valB = getVal(rb, "diameter");
-      break;
-    case "axis":
-      valA = getVal(ra, "a");
-      valB = getVal(rb, "a");
-      break;
-    case "period":
-      valA = getVal(ra, "per");
-      valB = getVal(rb, "per");
-      break;
-    case "approach":
-      valA = getVal(ra, "tp") ?? getVal(ra, "epoch");
-      valB = getVal(rb, "tp") ?? getVal(rb, "epoch");
-      break;
-    case "pha":
-      // prioritize PHAs first
-      if (aItem.type === "PHA" && bItem.type !== "PHA") return -1;
-      if (bItem.type === "PHA" && aItem.type !== "PHA") return 1;
-      return aItem.name.localeCompare(bItem.name) * (sortOrder === "asc" ? 1 : -1);
-    default:
-      return aItem.name.localeCompare(bItem.name) * (sortOrder === "asc" ? 1 : -1);
-  }
+      switch (sortOption) {
+        case "size":
+          valA = getVal(ra, "diameter");
+          valB = getVal(rb, "diameter");
+          break;
+        case "axis":
+          valA = getVal(ra, "a");
+          valB = getVal(rb, "a");
+          break;
+        case "period":
+          valA = getVal(ra, "per");
+          valB = getVal(rb, "per");
+          break;
+        case "approach":
+          valA = getVal(ra, "tp") ?? getVal(ra, "epoch");
+          valB = getVal(rb, "tp") ?? getVal(rb, "epoch");
+          break;
+        case "pha":
+          if (aItem.type === "PHA" && bItem.type !== "PHA") return -1;
+          if (bItem.type === "PHA" && aItem.type !== "PHA") return 1;
+          return aItem.name.localeCompare(bItem.name) * (sortOrder === "asc" ? 1 : -1);
+        default:
+          return aItem.name.localeCompare(bItem.name) * (sortOrder === "asc" ? 1 : -1);
+      }
 
-  // handle nulls → always bottom (REGARDLESS of sort order)
+      if ((valA === null || valA === 0) && valB !== null) return 1;
+      if ((valB === null || valB === 0) && valA !== null) return -1;
+      if ((valA === null || valA === 0) && (valA === null || valA === 0)) return 0;
+      return (valA - valB) * (sortOrder === "asc" ? 1 : -1);
+    });
 
-  if ((valA === null || valA === 0 ) && valB !== null) return 1;
-  if ((valB === null || valB === 0 ) && valA !== null) return -1;
-  if ((valA === null || valA === 0 ) && (valA === null || valA === 0 )) return 0;
-
-  // numeric compare with sort order applied
-  return (valA - valB) * (sortOrder === "asc" ? 1 : -1);
-});
-
-setFilteredItems(results);
+    setFilteredItems(results);
   }, [searchInput, sortOption, sortOrder]);
 
   const toggleItem = (item) => {
@@ -108,11 +100,25 @@ setFilteredItems(results);
   // --- analysis mode ---
   if (analysisTarget) {
     return (
-      <div className="fixed inset-0 bg-black text-white z-50 overflow-y-auto">
+      <div className="fixed inset-0 z-50 overflow-y-auto" style={{ background: "#0d0a08", color: "#f0e6d3" }}>
         <div className="p-6">
           <button
             onClick={() => setAnalysisTarget(null)}
-            className="mb-4 px-6 py-2 bg-gray-700 rounded hover:bg-gray-600"
+            style={{
+              background: "#0d0a08",
+              border: "1px solid rgba(255,69,0,0.35)",
+              color: "#f0e6d3",
+              fontFamily: "'DM Mono', monospace",
+              fontSize: "0.78rem",
+              letterSpacing: "0.08em",
+              padding: "8px 16px",
+              borderRadius: "4px",
+              cursor: "pointer",
+              marginBottom: "1.5rem",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+            }}
           >
             ← Back to Search
           </button>
@@ -125,37 +131,80 @@ setFilteredItems(results);
   // --- default sidebar ---
   return (
     <>
+      {/* Toggle button */}
       <button
         onClick={() => setIsOpen((s) => !s)}
-        className="z-50 fixed top-4 right-4 bg-black bg-opacity-60 text-white px-3 py-2 rounded shadow"
+        className="z-50 fixed top-4 right-4"
+        style={{
+          background: "#0d0a08",
+          border: "1px solid #ff4500",
+          color: "#ff4500",
+          fontFamily: "'Bebas Neue', sans-serif",
+          fontSize: "0.95rem",
+          letterSpacing: "0.12em",
+          padding: "7px 16px",
+          borderRadius: "4px",
+          cursor: "pointer",
+        }}
       >
-        {isOpen ? "Close Search" : "Open Search"}
+        {isOpen ? "✕ Close" : "⊕ Search"}
       </button>
 
+      {/* Sidebar panel */}
       <div
-        className={`fixed top-0 right-0 h-full w-96 bg-black bg-opacity-85 text-white shadow-lg transform transition-transform z-40 ${
+        className={`fixed top-0 right-0 h-full w-96 shadow-lg transform transition-transform z-40 ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
-        style={{ margin: "0.5rem" }}
+        style={{
+          background: "rgba(13,10,8,0.96)",
+          borderLeft: "1px solid rgba(255,69,0,0.2)",
+          fontFamily: "'DM Mono', monospace",
+          color: "#f0e6d3",
+        }}
         ref={dropdownRef}
       >
-        <div className="p-4 flex flex-col h-full">
+        <div className="p-4 flex flex-col h-full" style={{ gap: "0.75rem" }}>
+
+          {/* Search input */}
           <input
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search asteroids, comets, PHAs..."
-            className="w-full p-2 rounded bg-gray-900 text-white border border-gray-700"
+            style={{
+              width: "100%",
+              padding: "0.6rem 0.75rem",
+              background: "#2a2018",
+              border: "1px solid rgba(255,69,0,0.2)",
+              borderRadius: "4px",
+              color: "#f0e6d3",
+              fontFamily: "'DM Mono', monospace",
+              fontSize: "0.82rem",
+              outline: "none",
+            }}
           />
 
-          {/* Sort Options */}
-          <div className="mt-3 flex items-center space-x-2">
-            <div className="flex-1">
-              <label className="text-sm text-gray-300">Sort by</label>
+          {/* Sort options */}
+          <div className="flex items-end" style={{ gap: "0.5rem" }}>
+            <div className="flex-1 flex flex-col" style={{ gap: "0.3rem" }}>
+              <label style={{ fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "#8a7060" }}>
+                Sort by
+              </label>
               <select
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value)}
-                className="w-full mt-1 p-2 rounded bg-gray-900 text-white border border-gray-700"
+                style={{
+                  width: "100%",
+                  padding: "0.5rem 0.6rem",
+                  background: "#2a2018",
+                  border: "1px solid rgba(255,69,0,0.2)",
+                  borderRadius: "4px",
+                  color: "#f0e6d3",
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: "0.78rem",
+                  outline: "none",
+                  cursor: "pointer",
+                }}
               >
                 <option value="name">Name (A → Z)</option>
                 <option value="size">Size (diameter)</option>
@@ -165,40 +214,60 @@ setFilteredItems(results);
                 <option value="pha">PHA first</option>
               </select>
             </div>
-
             <button
               onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-              className="mt-5 px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 text-xs"
+              style={{
+                background: "#2a2018",
+                border: "1px solid rgba(255,69,0,0.2)",
+                color: "#ffb347",
+                width: "34px",
+                height: "34px",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "0.85rem",
+                flexShrink: 0,
+              }}
             >
               {sortOrder === "asc" ? "↑" : "↓"}
             </button>
           </div>
 
-          <div className="mt-2 text-xs text-gray-400">
+          {/* Count */}
+          <div style={{ fontSize: "0.62rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7060" }}>
             Showing {Math.min(100, filteredItems.length)} of {filteredItems.length}
           </div>
 
-          {/* Item List */}
-          <ul className="mt-3 overflow-y-auto flex-1 space-y-2 pr-2">
+          {/* Item list */}
+          <ul className="overflow-y-auto flex-1" style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "0.5rem", paddingRight: "4px" }}>
             {visible.map((item, idx) => {
               const raw = findRaw(item) || {};
               return (
                 <li
                   key={idx}
-                  className="p-2 bg-gray-800 rounded flex flex-col hover:bg-gray-700"
+                  style={{
+                    background: "#1a1410",
+                    border: "1px solid rgba(255,69,0,0.1)",
+                    borderLeft: "2px solid #ff4500",
+                    borderRadius: "5px",
+                    padding: "0.65rem 0.75rem",
+                  }}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="truncate font-medium">{item.name}</div>
+                  <div className="flex items-center justify-between" style={{ gap: "0.5rem" }}>
+                    <div style={{ fontSize: "0.8rem", color: "#f0e6d3", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                      {item.name}
+                    </div>
                     <input
                       type="checkbox"
                       checked={!!item.checked}
                       onChange={() => toggleItem(item)}
-                      className="w-4 h-4 ml-2"
+                      style={{ width: "15px", height: "15px", accentColor: "#ff4500", flexShrink: 0 }}
                     />
                   </div>
-                  <div className="text-xs text-gray-400 mt-1">
-                    {item.type} • a: {raw.a || "—"} AU • dia: {raw.diameter || "—"} km • per:{" "}
-                    {raw.per || "—"} d
+                  <div style={{ fontSize: "0.62rem", color: "#8a7060", marginTop: "0.3rem" }}>
+                    <span style={{ color: "#ffb347", fontSize: "0.6rem", letterSpacing: "0.1em", textTransform: "uppercase", marginRight: "0.4rem" }}>
+                      {item.type}
+                    </span>
+                    a: {raw.a || "—"} AU · dia: {raw.diameter || "—"} km · per: {raw.per || "—"} d
                   </div>
                   <button
                     onClick={async () => {
@@ -218,9 +287,21 @@ setFilteredItems(results);
                         console.error("Failed to fetch NEO data:", err);
                       }
                     }}
-                    className="mt-2 text-xs px-3 py-1 bg-blue-600 rounded hover:bg-blue-500"
+                    style={{
+                      marginTop: "0.5rem",
+                      width: "100%",
+                      background: "transparent",
+                      border: "1px solid rgba(255,69,0,0.3)",
+                      color: "#ff4500",
+                      fontFamily: "'Bebas Neue', sans-serif",
+                      fontSize: "0.8rem",
+                      letterSpacing: "0.1em",
+                      padding: "4px 0",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
                   >
-                    Approach Analysis
+                    Approach Analysis →
                   </button>
                 </li>
               );

@@ -10,7 +10,6 @@ function calculateMissDistance(orbitalElements, asteroidEpochJD, targetJD) {
 
   const d_for_coords = targetJD - 2451543.5;
 
-  // Get Earth position at target time
   const earthBody = new BodyEarth();
   const ecoords = earthBody.coordinates(d_for_coords);
   const earthPos = [
@@ -19,7 +18,6 @@ function calculateMissDistance(orbitalElements, asteroidEpochJD, targetJD) {
     ecoords.zeclip * AU_SCALE
   ];
 
-  // Get asteroid position at target time
   const a = orbitalElements.a ?? 1;
   const e = orbitalElements.e ?? 0;
   const iDeg = (orbitalElements.i * 180) / Math.PI;
@@ -46,20 +44,17 @@ function calculateMissDistance(orbitalElements, asteroidEpochJD, targetJD) {
     acoords.zeclip * AU_SCALE
   ];
 
-  // Calculate distance
   const dx = asteroidPos[0] - earthPos[0];
   const dy = asteroidPos[1] - earthPos[1];
   const dz = asteroidPos[2] - earthPos[2];
   const distanceAU = Math.sqrt(dx * dx + dy * dy + dz * dz);
-  
-  // Convert to kilometers (AU_SCALE is 10, so multiply by actual AU to km conversion)
   const distanceKm = distanceAU * (149_597_870.7 / 10);
-  
+
   return distanceKm;
 }
 
-export const GameMode = ({ 
-  orbitalElements, 
+export const GameMode = ({
+  orbitalElements,
   applyNewElements,
   closestApproachDate,
   asteroidEpochJD,
@@ -67,55 +62,48 @@ export const GameMode = ({
   setDtDays,
   dtDays,
   closestApproachData,
-  registerDeflectionCallback // NEW: callback to register when deflections happen
+  registerDeflectionCallback
 }) => {
   const [gameActive, setGameActive] = useState(false);
   const [gamePaused, setGamePaused] = useState(false);
-  const [timeStep, setTimeStep] = useState(30); // days to advance per interval
-  const [intervalSpeed, setIntervalSpeed] = useState(2000); // ms between advances
+  const [timeStep, setTimeStep] = useState(30);
+  const [intervalSpeed, setIntervalSpeed] = useState(2000);
   const [score, setScore] = useState(0);
   const [attempts, setAttempts] = useState(0);
   const [gameTime, setGameTime] = useState(0);
-  const [maxTime, setMaxTime] = useState(300); // 300 days before approach
+  const [maxTime, setMaxTime] = useState(300);
 
   const [lastMissDistance, setLastMissDistance] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', message: '', isSuccess: false });
   const intervalRef = useRef(null);
 
-  // Calculate current miss distance based on actual orbital elements
   const getCurrentMissDistance = () => {
     try {
       return calculateMissDistance(orbitalElements, asteroidEpochJD, targetJD);
     } catch (error) {
       console.error("Error calculating miss distance:", error);
-      // Fallback to static data if calculation fails
       if (closestApproachData?.miss_distance?.kilometers) {
         return parseFloat(closestApproachData.miss_distance.kilometers);
       }
       return 0;
     }
   };
-  const [minThreshold, setMinThreshold] = useState(Math.round(getCurrentMissDistance() * 1.5),2); // km minimum safe distance
-  const [maxThreshold, setMaxThreshold] = useState(Math.round(getCurrentMissDistance() * 2),2); // km maximum safe distance
-  // Track deflection attempts
+  const [minThreshold, setMinThreshold] = useState(Math.round(getCurrentMissDistance() * 1.5), 2);
+  const [maxThreshold, setMaxThreshold] = useState(Math.round(getCurrentMissDistance() * 2), 2);
+
   const onDeflectionAttempt = () => {
     if (!gameActive) return;
-    
     setAttempts((a) => a + 1);
     const currentMiss = getCurrentMissDistance();
     const improvement = currentMiss - lastMissDistance;
-    
-    // Award points for improvement
     if (improvement > 0) {
-      const points = Math.floor(improvement / 10000); // 1 point per 10,000 km
+      const points = Math.floor(improvement / 10000);
       setScore((s) => s + points);
     }
-    
     setLastMissDistance(currentMiss);
   };
 
-  // Register the deflection callback when game is active
   useEffect(() => {
     if (registerDeflectionCallback && gameActive) {
       registerDeflectionCallback(() => onDeflectionAttempt);
@@ -127,7 +115,6 @@ export const GameMode = ({
     };
   }, [registerDeflectionCallback, gameActive]);
 
-  // Start/restart game
   const startGame = () => {
     setMinThreshold(getCurrentMissDistance() * 1.5);
     setMaxThreshold(getCurrentMissDistance() * 2);
@@ -135,17 +122,13 @@ export const GameMode = ({
     setGamePaused(false);
     setScore(0);
     setAttempts(0);
-    setGameTime(-300); // Start 300 days before approach
+    setGameTime(-300);
     setDtDays(-300);
     setLastMissDistance(getCurrentMissDistance());
   };
 
-  // Pause/resume game
-  const togglePause = () => {
-    setGamePaused(!gamePaused);
-  };
+  const togglePause = () => setGamePaused(!gamePaused);
 
-  // Reset game
   const resetGame = () => {
     setGameActive(false);
     setGamePaused(false);
@@ -154,19 +137,16 @@ export const GameMode = ({
     clearInterval(intervalRef.current);
   };
 
-  // Auto-advance time
   useEffect(() => {
     if (gameActive && !gamePaused) {
       intervalRef.current = setInterval(() => {
         setGameTime((prev) => {
           const newTime = prev + timeStep;
           if (newTime >= 0) {
-            // Game over - check if successful (within range)
             const missDistance = getCurrentMissDistance();
             if (missDistance >= minThreshold && missDistance <= maxThreshold) {
-              // Success - within safe range
               const bonus = 1000;
-              const efficiency = Math.max(0, 100 - attempts * 10); // Bonus for fewer attempts
+              const efficiency = Math.max(0, 100 - attempts * 10);
               const finalScore = score + bonus + efficiency;
               setScore(finalScore);
               setModalContent({
@@ -202,221 +182,184 @@ export const GameMode = ({
     }
   }, [gameActive, gamePaused, timeStep, intervalSpeed, minThreshold, maxThreshold, score, attempts]);
 
+  // Timer badge color
+  const timerColor = gameTime < -100 ? '#22c55e' : gameTime < -30 ? '#f59e0b' : '#ff4500';
+
+  // Miss distance status color
+  const missDistance = getCurrentMissDistance();
+  const missColor = missDistance >= minThreshold && missDistance <= maxThreshold
+    ? '#22c55e'
+    : missDistance < minThreshold
+    ? '#ff4500'
+    : '#ffb347';
+
   return (
     <>
-    <div className="fixed top-20 left-4 bg-gray-900 bg-opacity-95 text-white p-6 rounded-lg shadow-lg w-80 space-y-4 z-50">
-      <div className="flex items-center justify-between border-b border-gray-700 pb-2">
-        <h3 className="text-xl font-bold flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-yellow-500" />
-          Game Mode
-        </h3>
-        {gameActive && (
-          <div className={`px-2 py-1 rounded text-xs font-bold ${gameTime < -100 ? 'bg-green-600' : gameTime < -30 ? 'bg-yellow-600' : 'bg-red-600'}`}>
-            T-{Math.abs(gameTime)} days
+      <div
+        className="fixed top-20 left-4 z-50"
+        style={{ background: "rgba(13,10,8,0.97)", border: "1px solid rgba(255,69,0,0.25)", borderRadius: "8px", boxShadow: "0 0 40px rgba(255,69,0,0.08)", padding: "1.5rem", width: "320px" }}
+      >
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(255,69,0,0.2)", paddingBottom: "0.6rem", marginBottom: "1rem" }}>
+          <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "1.5rem", letterSpacing: "0.1em", color: "#f0e6d3", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <Trophy style={{ width: "1.1rem", height: "1.1rem", color: "#ffd700" }} />
+            Game Mode
+          </h3>
+          {gameActive && (
+            <div style={{ background: timerColor, borderRadius: "4px", padding: "2px 8px", fontFamily: "'DM Mono', monospace", fontSize: "0.7rem", fontWeight: "bold", color: "#0d0a08", letterSpacing: "0.05em" }}>
+              T-{Math.abs(gameTime)} days
+            </div>
+          )}
+        </div>
+
+        {!gameActive ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.75rem", color: "#8a7060", lineHeight: "1.6" }}>
+              Deflect the asteroid before it reaches Earth! Time advances automatically — use the deflection tools in the Modify panel to change the asteroid's trajectory.
+            </p>
+
+            {[
+              { label: "Time Step (days)", value: timeStep, set: (v) => setTimeStep(parseInt(v) || 30), min: 1, max: 60, step: 1 },
+              { label: "Interval Speed (ms)", value: intervalSpeed, set: (v) => setIntervalSpeed(parseInt(v) || 2000), min: 500, max: 10000, step: 500 },
+              { label: "Min Safe Distance (km)", value: minThreshold, set: (v) => setMinThreshold(parseInt(v) || 1000000), min: 100000, step: 100000 },
+              { label: "Max Safe Distance (km)", value: maxThreshold, set: (v) => setMaxThreshold(parseInt(v) || 5000000), min: 100000, step: 100000 },
+            ].map(({ label, value, set, min, max, step }) => (
+              <div key={label} style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                <label style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.65rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "#8a7060" }}>{label}</label>
+                <input
+                  type="number"
+                  value={value}
+                  onChange={(e) => set(e.target.value)}
+                  min={min}
+                  max={max}
+                  step={step}
+                  style={{ width: "100%", padding: "0.5rem", borderRadius: "4px", background: "#2a2018", border: "1px solid rgba(255,69,0,0.2)", color: "#f0e6d3", fontFamily: "'DM Mono', monospace", fontSize: "0.85rem", outline: "none" }}
+                />
+              </div>
+            ))}
+
+            <button
+              onClick={startGame}
+              style={{ width: "100%", background: "linear-gradient(135deg, #ff4500, #c0392b)", border: "none", borderRadius: "6px", padding: "0.7rem", fontFamily: "'Bebas Neue', sans-serif", fontSize: "1.1rem", letterSpacing: "0.12em", color: "#f0e6d3", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", boxShadow: "0 0 24px rgba(255,69,0,0.3)", marginTop: "0.25rem" }}
+            >
+              <Play style={{ width: "1rem", height: "1rem" }} />
+              Start Game
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+            {/* Score / Attempts */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
+              <div style={{ background: "#2a2018", border: "1px solid rgba(255,69,0,0.15)", borderRadius: "6px", padding: "0.75rem", borderLeft: "2px solid #ff4500" }}>
+                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "#8a7060" }}>Score</div>
+                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "1.8rem", color: "#ffd700", letterSpacing: "0.05em" }}>{score}</div>
+              </div>
+              <div style={{ background: "#2a2018", border: "1px solid rgba(255,69,0,0.15)", borderRadius: "6px", padding: "0.75rem", borderLeft: "2px solid #ffb347" }}>
+                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "#8a7060" }}>Attempts</div>
+                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "1.8rem", color: "#ffb347", letterSpacing: "0.05em" }}>{attempts}</div>
+              </div>
+            </div>
+
+            {/* Miss Distance Status */}
+            <div style={{ background: "#2a2018", border: "1px solid rgba(255,69,0,0.15)", borderRadius: "6px", padding: "0.75rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.4rem" }}>
+                <AlertTriangle style={{ width: "0.9rem", height: "0.9rem", color: "#ffb347" }} />
+                <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.65rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7060" }}>Current Miss Distance</span>
+              </div>
+              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "1.5rem", color: missColor, letterSpacing: "0.05em" }}>
+                {missDistance.toLocaleString(undefined, { maximumFractionDigits: 0 })} km
+              </div>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.6rem", color: "#8a7060", marginTop: "0.25rem" }}>
+                Safe: {minThreshold.toLocaleString()} – {maxThreshold.toLocaleString()} km
+              </div>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.65rem", marginTop: "0.3rem", color: missColor }}>
+                {missDistance < minThreshold && "⚠ Too close — increase distance!"}
+                {missDistance > maxThreshold && "⚠ Over-deflected — reduce distance!"}
+                {missDistance >= minThreshold && missDistance <= maxThreshold && "✓ Within safe range!"}
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "'DM Mono', monospace", fontSize: "0.6rem", letterSpacing: "0.1em", color: "#8a7060" }}>
+                <span>Progress</span>
+                <span>{Math.floor((gameTime + 300) / 3)}%</span>
+              </div>
+              <div style={{ width: "100%", height: "10px", background: "#3d3028", borderRadius: "9999px", overflow: "hidden", border: "1px solid rgba(255,69,0,0.15)" }}>
+                <div
+                  style={{ height: "100%", background: "linear-gradient(90deg, #22c55e, #f59e0b, #ff4500)", borderRadius: "9999px", transition: "width 0.3s ease", width: `${((gameTime + 300) / 300) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Pause / Reset */}
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <button
+                onClick={togglePause}
+                style={{ flex: 1, background: gamePaused ? "linear-gradient(135deg, #ff4500, #c0392b)" : "#2a2018", border: gamePaused ? "none" : "1px solid rgba(255,69,0,0.3)", borderRadius: "6px", padding: "0.5rem", fontFamily: "'Bebas Neue', sans-serif", fontSize: "1rem", letterSpacing: "0.1em", color: "#f0e6d3", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem" }}
+              >
+                {gamePaused ? <Play style={{ width: "0.9rem", height: "0.9rem" }} /> : <Pause style={{ width: "0.9rem", height: "0.9rem" }} />}
+                {gamePaused ? 'Resume' : 'Pause'}
+              </button>
+              <button
+                onClick={resetGame}
+                style={{ background: "#2a2018", border: "1px solid rgba(255,69,0,0.3)", borderRadius: "6px", padding: "0.5rem 0.75rem", color: "#ff4500", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+              >
+                <RotateCcw style={{ width: "0.9rem", height: "0.9rem" }} />
+              </button>
+            </div>
+
+            {/* Instructions */}
+            <div style={{ background: "rgba(255,69,0,0.06)", border: "1px solid rgba(255,69,0,0.2)", borderRadius: "6px", padding: "0.75rem" }}>
+              <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "0.9rem", letterSpacing: "0.1em", color: "#ffb347", marginBottom: "0.4rem" }}>How to Play:</p>
+              <ul style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.65rem", color: "#8a7060", lineHeight: "1.8", paddingLeft: "1rem", listStyleType: "disc" }}>
+                <li>Open the Modify panel and use deflection methods</li>
+                <li>Time advances every {(intervalSpeed / 1000).toFixed(1)}s</li>
+                <li>Keep miss distance between {(minThreshold / 1000).toLocaleString()}k – {(maxThreshold / 1000).toLocaleString()}k km</li>
+                <li>Earn points for improvements (1 pt per 10k km)</li>
+              </ul>
+            </div>
           </div>
         )}
       </div>
 
-      {!gameActive ? (
-        <div className="space-y-4">
-          <p className="text-sm text-gray-300">
-            Deflect the asteroid before it reaches Earth! Time advances automatically - use the deflection tools in the Modify panel to change the asteroid's trajectory.
-          </p>
+      {/* Game Over Modal */}
+      {showModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
+          <div style={{ background: "#1a1410", borderRadius: "10px", boxShadow: "0 0 80px rgba(255,69,0,0.2)", padding: "2rem", maxWidth: "480px", width: "100%", margin: "0 1rem", border: `3px solid ${modalContent.isSuccess ? '#22c55e' : '#ff4500'}` }}>
+            <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "2.5rem", letterSpacing: "0.08em", textAlign: "center", color: modalContent.isSuccess ? '#22c55e' : '#ff4500', marginBottom: "1.25rem" }}>
+              {modalContent.title}
+            </h2>
 
-          <div className="space-y-2">
-            <label className="text-sm text-gray-400">Time Step (days)</label>
-            <input
-              type="number"
-              value={timeStep}
-              onChange={(e) => setTimeStep(parseInt(e.target.value) || 30)}
-              className="w-full p-2 rounded bg-gray-800 text-white border border-gray-600"
-              min="1"
-              max="60"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm text-gray-400">Interval Speed (ms)</label>
-            <input
-              type="number"
-              value={intervalSpeed}
-              onChange={(e) => setIntervalSpeed(parseInt(e.target.value) || 2000)}
-              className="w-full p-2 rounded bg-gray-800 text-white border border-gray-600"
-              min="500"
-              max="10000"
-              step="500"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm text-gray-400">Min Safe Distance (km)</label>
-            <input
-              type="number"
-              value={minThreshold}
-              onChange={(e) => setMinThreshold(parseInt(e.target.value) || 1000000)}
-              className="w-full p-2 rounded bg-gray-800 text-white border border-gray-600"
-              min="100000"
-              step="100000"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm text-gray-400">Max Safe Distance (km)</label>
-            <input
-              type="number"
-              value={maxThreshold}
-              onChange={(e) => setMaxThreshold(parseInt(e.target.value) || 5000000)}
-              className="w-full p-2 rounded bg-gray-800 text-white border border-gray-600"
-              min="100000"
-              step="100000"
-            />
-          </div>
-
-          <button
-            onClick={startGame}
-            className="w-full bg-green-600 hover:bg-green-700 py-3 rounded font-bold flex items-center justify-center gap-2"
-          >
-            <Play className="w-5 h-5" />
-            Start Game
-          </button>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {/* Game Stats */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-gray-800 p-3 rounded">
-              <div className="text-xs text-gray-400">Score</div>
-              <div className="text-2xl font-bold text-green-400">{score}</div>
+            <div style={{ background: "#2a2018", borderRadius: "8px", padding: "1.25rem", marginBottom: "1.25rem", border: "1px solid rgba(255,69,0,0.15)" }}>
+              {modalContent.message.split('\n\n').map((section, idx) => (
+                <div key={idx} style={{ color: "#f0e6d3", marginTop: idx > 0 ? "0.75rem" : 0 }}>
+                  {section.split('\n').map((line, lineIdx) => (
+                    <div key={lineIdx} style={{ fontFamily: lineIdx === 0 && idx > 0 ? "'Bebas Neue', sans-serif" : "'DM Mono', monospace", fontSize: lineIdx === 0 && idx > 0 ? "1.1rem" : "0.85rem", letterSpacing: lineIdx === 0 && idx > 0 ? "0.08em" : "0.03em", color: lineIdx === 0 && idx > 0 ? "#ffb347" : "#f0e6d3" }}>
+                      {line}
+                    </div>
+                  ))}
+                </div>
+              ))}
             </div>
-            <div className="bg-gray-800 p-3 rounded">
-              <div className="text-xs text-gray-400">Attempts</div>
-              <div className="text-2xl font-bold text-blue-400">{attempts}</div>
-            </div>
-          </div>
 
-          {/* Current Status */}
-          <div className="bg-gray-800 p-3 rounded space-y-2">
-            <div className="flex items-center gap-2 text-sm">
-              <AlertTriangle className="w-4 h-4 text-yellow-500" />
-              <span className="text-gray-400">Current Miss Distance:</span>
+            <div style={{ display: "flex", gap: "0.75rem" }}>
+              <button
+                onClick={() => { setShowModal(false); startGame(); }}
+                style={{ flex: 1, background: "linear-gradient(135deg, #ff4500, #c0392b)", border: "none", borderRadius: "6px", padding: "0.75rem", fontFamily: "'Bebas Neue', sans-serif", fontSize: "1.1rem", letterSpacing: "0.1em", color: "#f0e6d3", cursor: "pointer", boxShadow: "0 0 24px rgba(255,69,0,0.3)" }}
+              >
+                Play Again
+              </button>
+              <button
+                onClick={() => { setShowModal(false); resetGame(); }}
+                style={{ flex: 1, background: "#2a2018", border: "1px solid rgba(255,69,0,0.2)", borderRadius: "6px", padding: "0.75rem", fontFamily: "'Bebas Neue', sans-serif", fontSize: "1.1rem", letterSpacing: "0.1em", color: "#8a7060", cursor: "pointer" }}
+              >
+                Close
+              </button>
             </div>
-            <div className={`text-xl font-bold ${
-              getCurrentMissDistance() >= minThreshold && getCurrentMissDistance() <= maxThreshold
-                ? 'text-green-400'
-                : getCurrentMissDistance() < minThreshold
-                ? 'text-red-400'
-                : 'text-orange-400'
-            }`}>
-              {getCurrentMissDistance().toLocaleString(undefined, { maximumFractionDigits: 0 })} km
-            </div>
-            <div className="text-xs text-gray-400">
-              Safe Range: {minThreshold.toLocaleString()} - {maxThreshold.toLocaleString()} km
-            </div>
-            <div className="text-xs">
-              {getCurrentMissDistance() < minThreshold && (
-                <span className="text-red-400">⚠ Too close - increase distance!</span>
-              )}
-              {getCurrentMissDistance() > maxThreshold && (
-                <span className="text-orange-400">⚠ Over-deflected - reduce distance!</span>
-              )}
-              {getCurrentMissDistance() >= minThreshold && getCurrentMissDistance() <= maxThreshold && (
-                <span className="text-green-400">✓ Within safe range!</span>
-              )}
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="space-y-1">
-            <div className="flex justify-between text-xs text-gray-400">
-              <span>Progress</span>
-              <span>{Math.floor((gameTime + 300) / 3)}%</span>
-            </div>
-            <div className="w-full h-3 bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 transition-all duration-300"
-                style={{ width: `${((gameTime + 300) / 300) * 100}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Controls */}
-          <div className="flex gap-2">
-            <button
-              onClick={togglePause}
-              className={`flex-1 ${gamePaused ? 'bg-green-600 hover:bg-green-700' : 'bg-yellow-600 hover:bg-yellow-700'} py-2 rounded font-semibold flex items-center justify-center gap-2`}
-            >
-              {gamePaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
-              {gamePaused ? 'Resume' : 'Pause'}
-            </button>
-            <button
-              onClick={resetGame}
-              className="bg-red-600 hover:bg-red-700 py-2 px-4 rounded font-semibold flex items-center justify-center"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Instructions */}
-          <div className="bg-blue-900 bg-opacity-30 border border-blue-500 p-3 rounded text-xs text-gray-300">
-            <p className="font-semibold text-blue-300 mb-1">How to Play:</p>
-            <ul className="list-disc list-inside space-y-1">
-              <li>Open the Modify panel and use deflection methods</li>
-              <li>Time advances automatically every {(intervalSpeed / 1000).toFixed(1)}s</li>
-              <li>Keep miss distance between {(minThreshold / 1000).toLocaleString()}k - {(maxThreshold / 1000).toLocaleString()}k km</li>
-              <li>Earn points for improvements (1 pt per 10k km)</li>
-            </ul>
           </div>
         </div>
       )}
-    </div>
-
-    {/* Game Over Modal */}
-    {showModal && (
-      <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center" style={{ zIndex: 9999 }}>
-        <div className={`bg-gray-900 rounded-lg shadow-2xl p-8 max-w-lg w-full mx-4 border-4 ${
-          modalContent.isSuccess ? 'border-green-500' : 'border-red-500'
-        }`}>
-          <h2 className={`text-4xl font-bold mb-6 text-center ${
-            modalContent.isSuccess ? 'text-green-400' : 'text-red-400'
-          }`}>
-            {modalContent.title}
-          </h2>
-          
-          <div className="bg-gray-800 rounded-lg p-6 mb-6 space-y-3">
-            {modalContent.message.split('\n\n').map((section, idx) => (
-              <div key={idx} className="text-white">
-                {section.split('\n').map((line, lineIdx) => (
-                  <div key={lineIdx} className={lineIdx === 0 && idx > 0 ? 'font-bold text-lg mt-2' : 'text-base'}>
-                    {line}
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              onClick={() => {
-                setShowModal(false);
-                startGame();
-              }}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors text-lg"
-            >
-              Play Again
-            </button>
-            <button
-              onClick={() => {
-                setShowModal(false);
-                resetGame();
-              }}
-              className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition-colors text-lg"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    )}
     </>
   );
 };

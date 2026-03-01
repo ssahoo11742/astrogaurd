@@ -180,17 +180,32 @@ export default function ApproachAnalysis({ data }) {
     (ca) => parseSBDBDate(ca.close_approach_date).getTime() === closestApproachDate.getTime()
   );
 
+  // Shared inline button style
+  const btnStyle = {
+    background: "#0d0a08",
+    border: "1px solid rgba(255,69,0,0.35)",
+    color: "#ff4500",
+    fontFamily: "'Bebas Neue', sans-serif",
+    fontSize: "0.85rem",
+    letterSpacing: "0.1em",
+    padding: "4px 10px",
+    borderRadius: "4px",
+    cursor: "pointer",
+    flexShrink: 0,
+  };
+
   return (
     <div className="main-container z-0">
-      <div className="relative w-screen h-screen bg-black flex flex-col">
+      <div className="relative w-screen h-screen flex flex-col" style={{ background: "#0d0a08" }}>
         <Canvas camera={{ position: [0, 5, 20], fov: 60, zoom:10, far:10000 }}>
           <ambientLight intensity={0.5} />
           <pointLight position={[50, 50, 50]} intensity={1.2} />
           <OrbitControls ref={controlsRef} enableDamping dampingFactor={0.05} />
 
+          {/* Sun */}
           <mesh>
             <sphereGeometry args={[2, 32, 32]} />
-            <meshStandardMaterial color="yellow" emissive="yellow" />
+            <meshStandardMaterial color="#ffb347" emissive="#ff6a00" emissiveIntensity={0.8} />
           </mesh>
 
           <EarthMoon earthRef={earthRef} />
@@ -201,7 +216,7 @@ export default function ApproachAnalysis({ data }) {
           </mesh>
 
           {orbitPoints && (
-            <Line points={orbitPoints} color="red" lineWidth={2} transparent opacity={0.9} />
+            <Line points={orbitPoints} color="#ff4500" lineWidth={2} transparent opacity={0.9} />
           )}
 
           {earthRef.current && asteroidRef.current && (
@@ -211,7 +226,7 @@ export default function ApproachAnalysis({ data }) {
                   earthRef.current.position.toArray(),
                   asteroidRef.current.position.toArray(),
                 ]}
-                color="orange"
+                color="#ffb347"
                 lineWidth={2}
                 transparent
                 opacity={0.9}
@@ -224,7 +239,17 @@ export default function ApproachAnalysis({ data }) {
                 ]}
                 center
               >
-                <div className="bg-black/70 text-white text-xs px-2 py-1 rounded">
+                <div style={{
+                  background: "rgba(13,10,8,0.75)",
+                  color: "#ffb347",
+                  fontFamily: "'Bebas Neue', sans-serif",
+                  fontSize: "0.85rem",
+                  letterSpacing: "0.08em",
+                  padding: "3px 8px",
+                  borderRadius: "4px",
+                  border: "1px solid rgba(255,179,71,0.25)",
+                  whiteSpace: "nowrap",
+                }}>
                   {(
                     earthRef.current.position.distanceTo(asteroidRef.current.position) *
                     (149_597_870.7 / 10)
@@ -236,7 +261,7 @@ export default function ApproachAnalysis({ data }) {
 
           <Line
             points={generateOrbitPoints3D(earthOrbitalElements, 200, earthEpochJD, targetJD, mode, "EARTH")}
-            color="aqua"
+            color="#4fc3f7"
             lineWidth={2}
             transparent
             opacity={0.9}
@@ -256,49 +281,65 @@ export default function ApproachAnalysis({ data }) {
         </Canvas>
 
         {/* Game Mode Panel - Bottom Left (only shows when active) */}
-              <div 
-          className="absolute bottom-4  p-4 rounded-lg flex flex-col items-center space-y-2 transition-all z-40"
+        <div 
+          className="absolute bottom-4 p-4 rounded-lg flex flex-col items-center space-y-2 transition-all z-40"
           style={{
             width: gameMode ? '25%' : 'none',
             maxWidth: gameMode ? '25%' : 'none',
           }}
         >
-        {gameMode && (
-          <GameMode
-            orbitalElements={orbitalElements}
-            applyNewElements={applyNewElements}
-            closestApproachDate={closestApproachDate}
-            asteroidEpochJD={asteroidEpochJD}
-            targetJD={targetJD}
-            setDtDays={setDtDays}
-            dtDays={dtDays}
-            closestApproachData={closestApproachData}
-            calculateMissDistance={(elements) => 
-              calculateMissDistance(elements || orbitalElements, asteroidEpochJD, targetJD)
-            }
-            registerDeflectionCallback={setOnDeflectionCallback}
-          />
-        )}
+          {gameMode && (
+            <GameMode
+              orbitalElements={orbitalElements}
+              applyNewElements={applyNewElements}
+              closestApproachDate={closestApproachDate}
+              asteroidEpochJD={asteroidEpochJD}
+              targetJD={targetJD}
+              setDtDays={setDtDays}
+              dtDays={dtDays}
+              closestApproachData={closestApproachData}
+              calculateMissDistance={(elements) => 
+                calculateMissDistance(elements || orbitalElements, asteroidEpochJD, targetJD)
+              }
+              registerDeflectionCallback={setOnDeflectionCallback}
+            />
+          )}
         </div>
 
-        {/* Propagation Slider - Bottom (adjusted position when game mode is active) */}
+        {/* Propagation Slider */}
         <div 
-          className="absolute bottom-4 bg-gray-900 bg-opacity-80 p-4 rounded-lg flex flex-col items-center space-y-2 transition-all z-40"
+          className="absolute bottom-4 p-4 rounded-lg flex flex-col items-center space-y-2 transition-all z-40"
           style={{
             transform: gameMode ? 'translateY(610%)' : 'none',
-            width: gameMode ? '100%' : '100%',
-            maxWidth: gameMode ? '25%' : '25%',
+            width: '100%',
+            maxWidth: '25%',
+            background: "rgba(13,10,8,0.88)",
+            border: "1px solid rgba(255,69,0,0.2)",
+            backdropFilter: "blur(8px)",
           }}
         >
-          <p className="text-white text-sm">
-            Propagation Time: {new Date(closestApproachDate.getTime() + dtDays * 86400000).toUTCString()}
+          <p style={{
+            fontFamily: "'DM Mono', monospace",
+            fontSize: "0.65rem",
+            letterSpacing: "0.15em",
+            textTransform: "uppercase",
+            color: "#8a7060",
+            margin: 0,
+          }}>
+            Propagation Time
+          </p>
+          <p style={{
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: "1rem",
+            letterSpacing: "0.08em",
+            color: "#ffb347",
+            margin: 0,
+          }}>
+            {new Date(closestApproachDate.getTime() + dtDays * 86400000).toUTCString()}
           </p>
           
           <div className="flex items-center w-full space-x-2">
-            <button
-              className="btn btn-primary btn-sm flex-shrink-0"
-              onClick={() => setDtDays((prev) => Math.max(prev - 1, -30))}
-            >
+            <button style={btnStyle} onClick={() => setDtDays((prev) => Math.max(prev - 1, -30))}>
               &lt;
             </button>
             
@@ -310,20 +351,28 @@ export default function ApproachAnalysis({ data }) {
               onChange={(e) => setDtDays(parseFloat(e.target.value))}
               step={0.1}
               className="flex-1"
+              style={{ accentColor: "#ff4500" }}
             />
             
-            <button
-              className="btn btn-primary btn-sm flex-shrink-0"
-              onClick={() => setDtDays((prev) => Math.min(prev + 1, 30))}
-            >
+            <button style={btnStyle} onClick={() => setDtDays((prev) => Math.min(prev + 1, 30))}>
               &gt;
             </button>
             
             <button
-              className={`px-3 py-1 rounded flex-shrink-0 text-sm font-semibold transition-colors ${
-                gameMode ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
-              }`}
               onClick={() => setGameMode(!gameMode)}
+              style={{
+                background: gameMode ? "#c0392b" : "#ff4500",
+                border: "none",
+                color: gameMode ? "#f0e6d3" : "#0d0a08",
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: "0.85rem",
+                letterSpacing: "0.1em",
+                padding: "4px 12px",
+                borderRadius: "4px",
+                cursor: "pointer",
+                flexShrink: 0,
+                boxShadow: gameMode ? "0 0 12px rgba(192,57,43,0.4)" : "0 0 12px rgba(255,69,0,0.35)",
+              }}
             >
               {gameMode ? 'Exit Game' : 'Game Mode'}
             </button>

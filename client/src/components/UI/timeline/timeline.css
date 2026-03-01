@@ -9,14 +9,16 @@
 /* Track */
 /* Chrome, Safari, Edge */
 #timeline::-webkit-slider-runnable-track {
-    background: white;
+    background: linear-gradient(90deg, #2a2018 0%, #ff4500 100%);
     height: 0.5rem;
+    border-radius: 2px;
 }
 
 /* Firefox */
 #timeline::-moz-range-track {
-    background-color: white;
+    background: linear-gradient(90deg, #2a2018 0%, #ff4500 100%);
     height: 0.5rem;
+    border-radius: 2px;
 }
 
 /* Thumb */
@@ -25,22 +27,24 @@
     -webkit-appearance: none;
     height: 16px;
     width: 16px;
-    background: white;
+    background: #ffb347;
     border-radius: 0;
-    clip-path: polygon(50% 100%, 0 0, 100% 0); /* Create a diamond shape */
+    clip-path: polygon(50% 100%, 0 0, 100% 0);
     cursor: pointer;
-    margin-top: 5px; /* Align thumb with track */
+    margin-top: 5px;
+    filter: drop-shadow(0 0 6px rgba(255, 179, 71, 0.7));
 }
 
 /* Firefox */
 #timeline::-moz-range-thumb {
     height: 16px;
     width: 16px;
-    background: white;
+    background: #ffb347;
     border-radius: 0;
-    clip-path: polygon(50% 100%, 0 0, 100% 0); /* Create a diamond shape */
+    clip-path: polygon(50% 100%, 0 0, 100% 0);
     cursor: pointer;
-    margin-top: -8px; /* Align thumb with track */
+    margin-top: -8px;
+    filter: drop-shadow(0 0 6px rgba(255, 179, 71, 0.7));
 }
 
 /* Year labels */
@@ -49,11 +53,15 @@
     justify-content: space-between;
     padding: 0;
     margin: 10px 0;
-    width: 100%; /* Adjust width to match slider */
+    width: 100%;
 }
 
 .years li {
     display: inline-block;
     text-align: center;
-    width: auto; /* Let flexbox handle spacing */
+    width: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: #8a7060;
 }

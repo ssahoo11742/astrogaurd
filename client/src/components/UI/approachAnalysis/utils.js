@@ -97,7 +97,9 @@ export function evaluateImpact(energyMt, affectedPopulation = 0) {
   const impactEnergyScore = Math.min(100, Math.log10(energyMt + 1) * 20);
 
   // Population contribution as additive score
-  const popScore = Math.min(100, Math.log10(affectedPopulation + 1) * 10);
+  const popScore = Math.min(100, Math.log10(affectedPopulation + 1) * 100);
+  console.log(popScore+":::::PSCORE")
+  console.log(affectedPopulation)
 
   const totalScore = Math.min(100, impactEnergyScore + popScore).toFixed(1);
 

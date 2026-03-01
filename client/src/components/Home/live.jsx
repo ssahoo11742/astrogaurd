@@ -76,7 +76,7 @@ const LiveNEOSection = () => {
           {neos.map((neo) => (
             <div
               key={neo.name}
-              className="bg-black border border-gray-800 rounded-lg p-5 hover:border-cyan-900 transition-colors flex flex-col justify-between h-full m-4"
+              className="bg-black m-5 border border-gray-800 rounded-lg p-5 hover:border-cyan-900 transition-colors flex flex-col justify-between h-full m-4"
             >
               {/* Top Row */}
               <div>

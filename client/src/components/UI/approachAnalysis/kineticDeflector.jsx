@@ -14,19 +14,20 @@ export default function KineticDeflector({ handleApplyKineticImpact, setDeltaVMa
   function KineticScene({ direction }) { /* unchanged */ }
 
   return (
-    <div className="bg-gray-800 p-4 rounded-lg shadow-sm space-y-4 mt-4">
-      <h4 className="font-semibold text-lg border-b border-gray-700 pb-1">
+    <div className="p-4 rounded-lg shadow-sm space-y-4 mt-4" style={{ background: "#1a1410", border: "1px solid rgba(255,69,0,0.2)" }}>
+      <h4 className="font-semibold text-lg pb-1" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "1.4rem", letterSpacing: "0.08em", color: "#f0e6d3", borderBottom: "1px solid rgba(255,69,0,0.2)" }}>
         Kinetic Deflector
       </h4>
 
       <div className="space-y-3">
         {/* Δv Magnitude */}
         <div className="flex flex-col">
-          <label className="text-gray-400 text-sm mb-1">Δv Magnitude (km/s)</label>
+          <label className="text-sm mb-1" style={{ color: "#8a7060", fontFamily: "'DM Mono', monospace", letterSpacing: "0.1em", textTransform: "uppercase", fontSize: "0.7rem" }}>Δv Magnitude (km/s)</label>
           <Tooltip text="Magnitude of velocity change applied to the asteroid. Larger Δv moves the asteroid more.">
             <input
               type="number"
-              className="w-full p-2 rounded text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full p-2 rounded focus:outline-none"
+              style={{ background: "#2a2018", border: "1px solid rgba(255,69,0,0.2)", color: "#f0e6d3", fontFamily: "'DM Mono', monospace" }}
               value={deltaVMag * 1000}
               onChange={(e) => setDeltaVMag(parseFloat(e.target.value) / 1000)}
             />
@@ -35,10 +36,11 @@ export default function KineticDeflector({ handleApplyKineticImpact, setDeltaVMa
 
         {/* Direction */}
         <div className="flex flex-col">
-          <label className="text-gray-400 text-sm mb-1">Direction</label>
+          <label className="text-sm mb-1" style={{ color: "#8a7060", fontFamily: "'DM Mono', monospace", letterSpacing: "0.1em", textTransform: "uppercase", fontSize: "0.7rem" }}>Direction</label>
           <Tooltip text="Direction in which the Δv is applied. Along Velocity = along motion, Radial = toward/away from Sun, Normal = perpendicular to orbit.">
             <select
-              className="w-full p-2 rounded text-black focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full p-2 rounded focus:outline-none"
+              style={{ background: "#2a2018", border: "1px solid rgba(255,69,0,0.2)", color: "#f0e6d3", fontFamily: "'DM Mono', monospace" }}
               value={direction}
               onChange={(e) => setDirection(e.target.value)}
             >
@@ -51,7 +53,8 @@ export default function KineticDeflector({ handleApplyKineticImpact, setDeltaVMa
 
         {/* Apply Button */}
           <button
-            className="w-full bg-green-600 hover:bg-green-700 rounded p-2 font-semibold shadow mt-2"
+            className="w-full rounded p-2 font-semibold shadow mt-2"
+            style={{ background: "linear-gradient(135deg, #ff4500, #c0392b)", border: "none", color: "#f0e6d3", fontFamily: "'Bebas Neue', sans-serif", fontSize: "1.1rem", letterSpacing: "0.12em", cursor: "pointer", boxShadow: "0 0 24px rgba(255,69,0,0.3)" }}
             onClick={() => { 
               handleApplyKineticImpact(deltaVMag, direction); 
               setKineticEvaluation(evaluateMitigation(
@@ -65,18 +68,18 @@ export default function KineticDeflector({ handleApplyKineticImpact, setDeltaVMa
 
 
         {/* Score */}
-        <div className="w-full mt-4 p-3 bg-gray-700 rounded">
+        <div className="w-full mt-4 p-3 rounded" style={{ background: "#2a2018", border: "1px solid rgba(255,69,0,0.15)" }}>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-300">Score</span>
-            <span className="text-sm font-bold text-white">
+            <span className="text-sm font-medium" style={{ color: "#8a7060", fontFamily: "'DM Mono', monospace", fontSize: "0.7rem", letterSpacing: "0.1em", textTransform: "uppercase" }}>Score</span>
+            <span className="text-sm font-bold" style={{ color: "#ffb347", fontFamily: "'Bebas Neue', sans-serif", fontSize: "1.1rem" }}>
               {kineticEvaluation?.score || 0} / 100
             </span>
           </div>
 
-          <div className="relative w-full h-8 bg-gray-600 rounded-full overflow-hidden border border-gray-500">
+          <div className="relative w-full h-8 rounded-full overflow-hidden" style={{ background: "#3d3028", border: "1px solid rgba(255,69,0,0.2)" }}>
             <div
-              className="h-full bg-red-500 rounded-full"
-              style={{ width: `${kineticEvaluation?.score || 0}%` }}
+              className="h-full rounded-full"
+              style={{ width: `${kineticEvaluation?.score || 0}%`, background: "linear-gradient(90deg, #ff4500, #ffb347)", boxShadow: "0 0 12px rgba(255,69,0,0.4)", transition: "width 0.5s ease" }}
             />
           </div>
         </div>
@@ -84,7 +87,7 @@ export default function KineticDeflector({ handleApplyKineticImpact, setDeltaVMa
 
       {/* 3D Scene */}
       {showCloseUp && (
-        <div className="w-full h-96 bg-gray-900 rounded-lg overflow-hidden mt-2">
+        <div className="w-full h-96 rounded-lg overflow-hidden mt-2" style={{ background: "#0d0a08", border: "1px solid rgba(255,69,0,0.15)" }}>
           <Canvas camera={{ position: [0, 0, 5], fov: 60 }}>
             <ambientLight intensity={0.5} />
             <pointLight position={[10, 10, 10]} />

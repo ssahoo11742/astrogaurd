@@ -1,41 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap');
 
-
-.info {
-  max-height: 100vh; /* keep it within the viewport */
-  overflow-y: auto;  /* enable scrolling only here */
-  overflow-x: hidden; /* no sideways scroll */
+:root {
+  --ember: #ff4500;
+  --amber: #ffb347;
+  --char:  #0d0a08;
+  --coal:  #1a1410;
+  --ash:   #2a2018;
+  --bone:  #f0e6d3;
+  --dim:   #8a7060;
 }
 
+/* ── Fix the left-edge bleed ── */
+.main-container {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Scrollable info panel ── */
+.info {
+  max-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* ── Generic impact / action button ── */
 .impact-button {
-  background-color: rgba(67, 116, 207, 0.404);
-  color: white;
+  background: var(--char);
+  border: 1px solid rgba(255, 69, 0, 0.35);
+  color: var(--ember);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
   padding: 0.5rem 1rem;
-  border-radius: 0.25rem;
+  border-radius: 4px;
   font-weight: 500;
   cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  box-shadow: none;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.impact-button:hover {
+  background: var(--ember);
+  color: var(--char);
+  box-shadow: 0 0 14px rgba(255, 69, 0, 0.35);
 }
 
-/* src/index.css or a new CSS file */
+/* ── Top-right button cluster ── */
 .top-right-buttons {
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 8px;
+  z-index: 1000;
   margin-top: 1rem;
   margin-right: 1rem;
-  position: fixed; /* fixed relative to viewport */
-  top: 8px;       /* distance from top edge */
-  right: 8px;     /* distance from right edge */
-  display: flex;
-  gap: 8px;       /* spacing between buttons */
-  z-index: 1000;  /* make sure it’s above everything else */
 }
+
 .top-right-buttons button {
-  background-color: rgba(67, 116, 207, 0.404);
-  color: white;
+  background: var(--char);
+  border: 1px solid rgba(255, 69, 0, 0.35);
+  color: var(--ember);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
   padding: 0.5rem 1rem;
-  border-radius: 0.25rem;
-  font-weight: 500;
+  border-radius: 4px;
   cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
 .top-right-buttons button:hover {
-  background-color: rgba(1, 37, 61, 0.85);
+  background: var(--ember);
+  color: var(--char);
+  box-shadow: 0 0 14px rgba(255, 69, 0, 0.35);
 }
