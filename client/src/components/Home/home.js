@@ -274,7 +274,7 @@ const Home = () => {
                 <span className="text-2xl">🌍</span>
               </div>
 <span className="text-xl font-bold">
-  AstroGuard — <span className="italic text-sm font-normal">By Exoplaneteers</span>
+  Golden Dome<span className="italic text-sm font-normal"></span>
 </span>
 
             </div>
@@ -339,12 +339,12 @@ const Home = () => {
         {/* Content */}
         <div className="relative z-10 h-full flex flex-col items-center justify-center">
           <h1 className="text-4xl font-bold mb-4">3D Asteroid Explorer</h1>
-          <button
+          {/* <button
             onClick={() => navigate("/3dinteractive")}
             className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
           >
             Go to 3D Interactive
-          </button>
+          </button> */}
         </div>
       </div>
 
