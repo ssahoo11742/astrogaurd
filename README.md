@@ -1,1 +1,1 @@
-[goldendome.netlify.app](goldendome.netlify.app)
+[GOLDEN DOME LINK](https://goldendome.netlify.app/)
